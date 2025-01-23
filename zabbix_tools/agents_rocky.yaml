@@ -21,20 +21,7 @@
           - ca-certificates
           - curl
         state: present
-              
-    - name: Download Zabbix GPG key
-      ansible.builtin.get_url:
-        url: https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX-A14EA591
-        dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-ZABBIX
-        validate_certs: yes
-        mode: 0644
-        
-    - name: Import Zabbix GPG key
-      ansible.builtin.rpm_key:
-        key: /etc/pki/rpm-gpg/RPM-GPG-KEY-ZABBIX
-        state: present
-        
-        
+                
 
     - name: Install Zabbix 7.2 repository
       ansible.builtin.yum:
