@@ -2,6 +2,7 @@
 - name: Install and configure Zabbix Agent 2 on Rocky Linux
   hosts: all
   become: yes
+  become_method: sudo
   vars:
     zabbix_server: "172.16.42.143"        # Your Zabbix server IP
     zabbix_server_active: "172.16.42.143" # Your Zabbix server IP
