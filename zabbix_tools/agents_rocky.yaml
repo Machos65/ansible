@@ -18,6 +18,7 @@
       ansible.builtin.yum:
         name: https://repo.zabbix.com/zabbix/7.2/release/rocky/9/noarch/zabbix-release-latest-7.2.el9.noarch.rpm
         state: present
+        disable_gpg_check: yes 
 
     - name: Update YUM cache
       ansible.builtin.yum:
