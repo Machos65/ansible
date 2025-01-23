@@ -9,6 +9,11 @@
     zabbix_agent2_hostname: "{{ ansible_hostname }}"
 
   tasks:
+   - name: Import Zabbix GPG key
+     ansible.builtin.rpm_key:
+        key: https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX
+        state: present
+
     - name: Install Zabbix 7.2 repository
       ansible.builtin.package:
         name: "https://repo.zabbix.com/zabbix/7.2/release/rocky/9/noarch/zabbix-release-latest-7.2.el9.noarch.rpm"
