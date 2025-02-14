@@ -5,10 +5,10 @@
 
   # Define variables (customize these in AWX)
   vars:
-    zabbix_server_url: "https://zabbix.fumbaports.com/api_jsonrpc.php"
-    zabbix_api_user: "Fumbadmin"
-    zabbix_api_pass: "@Kingkaka123"
-    host_name: "example-host"
+    zabbix_server_url: "{{ zabbix_server_urls }}"
+    zabbix_api_user: "{{ zabbix_username }}"
+    zabbix_api_pass: "{{ zabbix_Password }}"
+    host_name: "{{ agent_host_name }}"
     host_groups:
       - name: "Linux servers"  # Group must exist in Zabbix
     host_ip: "192.168.1.100"
