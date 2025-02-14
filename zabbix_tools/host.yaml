@@ -34,7 +34,7 @@
         ansible_httpapi_port: 443
         ansible_httpapi_use_ssl: false
         ansible_httpapi_validate_certs: false
-        ansible_zabbix_url_path: "https://zabbix.fumbaports.com"  # Adjust if Zabbix WebUI runs on a non-default path
+        ansible_zabbix_url_path: "{{ zabbix_server_urls }}"  # Adjust if Zabbix WebUI runs on a non-default path
       community.zabbix.zabbix_host:
         server_url: "{{ zabbix_server_url }}"
         login_user: "{{ zabbix_api_user }}"
