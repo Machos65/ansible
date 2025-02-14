@@ -18,7 +18,7 @@
         dest: /tmp/zabbix-release_latest_7.2+ubuntu22.04_all.deb
 
     - name: Install Zabbix repository
-      ansible.builtin.dpkg:
+      ansible.builtin.apt:
         deb: /tmp/zabbix-release_latest_7.2+ubuntu22.04_all.deb
 
     - name: Update apt cache
