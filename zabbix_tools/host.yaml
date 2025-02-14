@@ -7,17 +7,29 @@
   vars:
     zabbix_server_url: "{{ zabbix_server_urls }}"
     zabbix_api_user: "{{ zabbix_username }}"
-    zabbix_api_pass: "{{ zabbix_password }}"  # Use consistent naming
+    zabbix_api_pass: "{{ zabbix_password }}"
     host_name: "{{ agent_host_name }}"
     host_groups:
-      - name: "{{ zabbix_host_group }}"  # Group must exist in Zabbix
-    host_ip: "{{ zabbix_host_ip }}"  # Replace with the actual IP of the host
+      - name: "Servers/Linux servers"  # Group must exist in Zabbix
+    host_ip: "{{ hostip }}"  # Replace with the actual IP of the host
     link_templates:
       - name: "Template OS Linux"  # Template must exist in Zabbix
     zabbix_agent_port: 10050
 
   tasks:
-    - name: "Create/Update Host in Zabbix"
+    - name: Set credentials to access Zabbix Server API
+      ansible.builtin.set_fact:
+        ansible_user: "{{ zabbix_api_user }}"
+        ansible_httpapi_pass: "{{ zabbix_api_pass }}"
+
+    - name: Create/Update Host in Zabbix
+      vars:
+        ansible_network_os: community.zabbix.zabbix
+        ansible_connection: httpapi
+        ansible_httpapi_port: 443
+        ansible_httpapi_use_ssl: false
+        ansible_httpapi_validate_certs: false
+        ansible_zabbix_url_path: "https://zabbix.fumbaports.com"  # Adjust if Zabbix WebUI runs on a non-default path
       community.zabbix.zabbix_host:
         server_url: "{{ zabbix_server_url }}"
         login_user: "{{ zabbix_api_user }}"
@@ -36,6 +48,6 @@
       delegate_to: localhost
       register: zabbix_host_result
 
-    - name: "Display Result"
+    - name: Display Result
       debug:
         var: zabbix_host_result
