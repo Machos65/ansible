@@ -2,7 +2,7 @@
 - name: Install and configure Zabbix Agent 2 on Rocky Linux
   hosts: all
   become: yes
-  become_method: sudo
+  become_method: root
   vars:
     zabbix_agent2_hostname: "{{ ansible_hostname }}"
 
