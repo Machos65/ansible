@@ -7,11 +7,11 @@
   vars:
     zabbix_server_url: "{{ zabbix_server_urls }}"
     zabbix_api_user: "{{ zabbix_username }}"
-    zabbix_api_pass: "{{ zabbix_Password }}"
+    zabbix_api_pass: "{{ zabbix_password }}"  # Use consistent naming
     host_name: "{{ agent_host_name }}"
     host_groups:
-      - name: "Linux servers"  # Group must exist in Zabbix
-    host_ip: "192.168.1.100"
+      - name: "{{ zabbix_host_group }}"  # Group must exist in Zabbix
+    host_ip: "{{ zabbix_host_ip }}"  # Replace with the actual IP of the host
     link_templates:
       - name: "Template OS Linux"  # Template must exist in Zabbix
     zabbix_agent_port: 10050
