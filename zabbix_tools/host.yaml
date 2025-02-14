@@ -1,0 +1,41 @@
+---
+- name: Add Host to Zabbix
+  hosts: localhost  # Runs on the AWX server/local machine
+  gather_facts: no  # Speeds up execution since facts are not needed
+
+  # Define variables (customize these in AWX)
+  vars:
+    zabbix_server_url: "https://zabbix.fumbaports.com/api_jsonrpc.php"
+    zabbix_api_user: "Fumbadmin"
+    zabbix_api_pass: "@Kingkaka123"
+    host_name: "example-host"
+    host_groups:
+      - name: "Linux servers"  # Group must exist in Zabbix
+    host_ip: "192.168.1.100"
+    link_templates:
+      - name: "Template OS Linux"  # Template must exist in Zabbix
+    zabbix_agent_port: 10050
+
+  tasks:
+    - name: "Create/Update Host in Zabbix"
+      community.zabbix.zabbix_host:
+        server_url: "{{ zabbix_server_url }}"
+        login_user: "{{ zabbix_api_user }}"
+        login_password: "{{ zabbix_api_pass }}"
+        host_name: "{{ host_name }}"
+        host_groups: "{{ host_groups }}"
+        link_templates: "{{ link_templates }}"
+        interfaces:
+          - type: 1  # 1 = Agent interface
+            main: 1  # Primary interface
+            useip: 1  # Use IP instead of DNS
+            ip: "{{ host_ip }}"
+            dns: ""
+            port: "{{ zabbix_agent_port }}"
+        state: present  # Ensure the host exists
+      delegate_to: localhost
+      register: zabbix_host_result
+
+    - name: "Display Result"
+      debug:
+        var: zabbix_host_result
