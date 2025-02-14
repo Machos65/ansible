@@ -2,7 +2,10 @@
 - name: Add Host to Zabbix
   hosts: localhost  # Runs on the AWX server/local machine
   gather_facts: no  # Speeds up execution since facts are not needed
-
+  
+  # Define collections required for this playbook
+  collections:
+    - community.zabbix
   # Define variables (customize these in AWX)
   vars:
     zabbix_server_url: "{{ zabbix_server_urls }}"
