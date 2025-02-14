@@ -1,0 +1,75 @@
+---
+- name: Install and configure Zabbix Agent 2 on Ubuntu 22.04
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    zabbix_agent2_hostname: "{{ ansible_hostname }}"
+
+  tasks:
+    - name: Ensure system is updated
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Download Zabbix repository package
+      ansible.builtin.get_url:
+        url: https://repo.zabbix.com/zabbix/7.2/release/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_7.2+ubuntu22.04_all.deb
+        dest: /tmp/zabbix-release_latest_7.2+ubuntu22.04_all.deb
+
+    - name: Install Zabbix repository
+      ansible.builtin.dpkg:
+        deb: /tmp/zabbix-release_latest_7.2+ubuntu22.04_all.deb
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Zabbix Agent 2
+      ansible.builtin.apt:
+        name: zabbix-agent2
+        state: latest
+
+    - name: Install Zabbix Agent 2 plugins
+      ansible.builtin.apt:
+        name:
+          - zabbix-agent2-plugin-mongodb
+          - zabbix-agent2-plugin-mssql
+          - zabbix-agent2-plugin-postgresql
+        state: present
+
+    - name: Configure Server address
+      ansible.builtin.lineinfile:
+        path: /etc/zabbix/zabbix_agent2.conf
+        regexp: '^#?Server='
+        line: "Server={{ zabbix_server }}"
+        state: present
+      notify: Restart Zabbix Agent2
+
+    - name: Configure ServerActive address
+      ansible.builtin.lineinfile:
+        path: /etc/zabbix/zabbix_agent2.conf
+        regexp: '^#?ServerActive='
+        line: "ServerActive={{ zabbix_server_active }}"
+        state: present
+      notify: Restart Zabbix Agent2
+
+    - name: Configure Hostname
+      ansible.builtin.lineinfile:
+        path: /etc/zabbix/zabbix_agent2.conf
+        regexp: '^#?Hostname='
+        line: "Hostname={{ zabbix_agent2_hostname }}"
+        state: present
+      notify: Restart Zabbix Agent2
+
+    - name: Enable and start Zabbix Agent2 service
+      ansible.builtin.systemd:
+        name: zabbix-agent2
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: Restart Zabbix Agent2
+      ansible.builtin.systemd:
+        name: zabbix-agent2
+        state: restarted
