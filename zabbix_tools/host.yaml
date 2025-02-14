@@ -45,6 +45,7 @@
             dns: ""
             port: "{{ zabbix_agent_port }}"
         state: present  # Ensure the host exists
+        monitored_by: zabbix_server
       delegate_to: localhost
       register: zabbix_host_result
 
