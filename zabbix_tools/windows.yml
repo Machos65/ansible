@@ -1,0 +1,7 @@
+---
+- name: Test Windows Connection
+  hosts: GATEWKS-FP002
+  gather_facts: no
+  tasks:
+    - name: Ping the Windows host
+      win_ping:
