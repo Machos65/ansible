@@ -1,30 +1,8 @@
 ---
-- name: Install Zabbix Agent on Windows using Chocolatey
+- name: Install Notepad++ using Chocolatey
   hosts: all
-  gather_facts: no
   tasks:
-    # Step 1: Ensure Chocolatey is installed
-    - name: Install Chocolatey
-      win_chocolatey:
-        name: chocolatey
+    - name: Install Notepad++
+      community.windows.win_chocolatey:
+        name: notepadplusplus
         state: present
-
-    # Step 2: Stop the Zabbix Agent service if it is running
-    - name: Stop Zabbix Agent service
-      win_service:
-        name: 'Zabbix Agent'
-        state: stopped
-      ignore_errors: yes  # Continue even if the service does not exist
-
-    # Step 3: Install Zabbix Agent using Chocolatey
-    - name: Install Zabbix Agent
-      win_chocolatey:
-        name: zabbix-agent
-        state: present
-        install_args: 'SERVER=x.x.x.x'  # Replace x.x.x.x with your Zabbix server IP
-
-    # Step 5: Restart the Zabbix Agent service
-    - name: Restart Zabbix Agent service
-      win_service:
-        name: 'Zabbix Agent'
-        state: restarted
