@@ -1,6 +1,6 @@
 ---
 - name: Check if Zabbix Agent is installed on Windows hosts
-  hosts: windows
+  hosts: all
   gather_facts: no
   tasks:
     - name: Check if Zabbix Agent service exists
