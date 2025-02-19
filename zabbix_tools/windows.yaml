@@ -1,7 +1,23 @@
 ---
-- name: Example playbook for Windows
+- name: Check if Zabbix Agent is installed on Windows hosts
   hosts: windows
   gather_facts: no
   tasks:
-    - name: Ping the Windows host
-      win_ping:
+    - name: Check if Zabbix Agent service exists
+      win_service:
+        name: 'Zabbix Agent'
+      register: zabbix_service
+
+    - name: Debug the result of the Zabbix service check
+      debug:
+        var: zabbix_service
+
+    - name: Fail if Zabbix Agent is not installed
+      fail:
+        msg: "Zabbix Agent is not installed."
+      when: not zabbix_service.exists
+
+    - name: Print a message if Zabbix Agent is installed
+      debug:
+        msg: "Zabbix Agent is installed and its state is {{ zabbix_service.state }}."
+      when: zabbix_service.exists
