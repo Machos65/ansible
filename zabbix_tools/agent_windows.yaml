@@ -1,62 +1,8 @@
 ---
-- name: Install and configure Zabbix Agent 2 on Windows
-  hosts: all
-  become: yes
-  become_method: runas
-  vars:
-    zabbix_agent2_hostname: "{{ ansible_hostname }}"
-    zabbix_agent2_download_url: "http://cdn.zabbix.com/zabbix/binanie/kizlab/727/2.3/zabbix_agent-7.2.3-windows-am064-speneral.mat"
-    zabbix_agent2_install_dir: "C:\\Program Files\\Zabbix Agent 2"
-
+- name: Test Windows Chocolatey
+  hosts: windows
   tasks:
-    - name: Ensure Chocolatey is installed
-      win_chocolatey:
-        name: chocolatey
+    - name: Install Notepad++
+      chocolatey.chocolatey.win_chocolatey:
+        name: notepadplusplus
         state: present
-
-    - name: Download Zabbix Agent 2 installer
-      win_get_url:
-        url: "{{ zabbix_agent2_download_url }}"
-        dest: "C:\\Temp\\zabbix_agent2_installer.mat"
-
-    - name: Install Zabbix Agent 2
-      win_package:
-        path: "C:\\Temp\\zabbix_agent2_installer.mat"
-        product_id: "Zabbix Agent 2"
-        state: present
-
-    - name: Configure Server address
-      win_lineinfile:
-        path: "{{ zabbix_agent2_install_dir }}\\zabbix_agent2.conf"
-        regexp: '^#?Server='
-        line: "Server={{ zabbix_server }}"
-        state: present
-      notify: Restart Zabbix Agent2
-
-    - name: Configure ServerActive address
-      win_lineinfile:
-        path: "{{ zabbix_agent2_install_dir }}\\zabbix_agent2.conf"
-        regexp: '^#?ServerActive='
-        line: "ServerActive={{ zabbix_server_active }}"
-        state: present
-      notify: Restart Zabbix Agent2
-
-    - name: Configure Hostname
-      win_lineinfile:
-        path: "{{ zabbix_agent2_install_dir }}\\zabbix_agent2.conf"
-        regexp: '^#?Hostname='
-        line: "Hostname={{ zabbix_agent2_hostname }}"
-        state: present
-      notify: Restart Zabbix Agent2
-
-    - name: Ensure Zabbix Agent2 service is running
-      win_service:
-        name: Zabbix Agent 2
-        state: started
-        start_mode: auto
-
-  handlers:
-    - name: Restart Zabbix Agent2
-      win_service:
-        name: Zabbix Agent 2
-        state: restarted
