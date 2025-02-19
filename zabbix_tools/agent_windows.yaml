@@ -1,0 +1,56 @@
+---
+- name: Install and configure Zabbix Agent 2 on Windows
+  hosts: all
+  become: yes
+  become_method: runas
+  vars:
+    zabbix_agent2_hostname: "{{ ansible_hostname }}"
+    zabbix_server: "your_zabbix_server_ip"
+    zabbix_server_active: "your_zabbix_server_active_ip"
+
+  tasks:
+    - name: Ensure Chocolatey is installed
+      win_chocolatey:
+        name: chocolatey
+        state: present
+
+    - name: Install Zabbix Agent 2 using Chocolatey
+      win_chocolatey:
+        name: zabbix-agent2
+        state: present
+
+    - name: Configure Server address
+      win_lineinfile:
+        path: C:\Program Files\Zabbix Agent 2\zabbix_agent2.conf
+        regexp: '^#?Server='
+        line: "Server={{ zabbix_server }}"
+        state: present
+      notify: Restart Zabbix Agent2
+
+    - name: Configure ServerActive address
+      win_lineinfile:
+        path: C:\Program Files\Zabbix Agent 2\zabbix_agent2.conf
+        regexp: '^#?ServerActive='
+        line: "ServerActive={{ zabbix_server_active }}"
+        state: present
+      notify: Restart Zabbix Agent2
+
+    - name: Configure Hostname
+      win_lineinfile:
+        path: C:\Program Files\Zabbix Agent 2\zabbix_agent2.conf
+        regexp: '^#?Hostname='
+        line: "Hostname={{ zabbix_agent2_hostname }}"
+        state: present
+      notify: Restart Zabbix Agent2
+
+    - name: Ensure Zabbix Agent2 service is running
+      win_service:
+        name: Zabbix Agent 2
+        state: started
+        start_mode: auto
+
+  handlers:
+    - name: Restart Zabbix Agent2
+      win_service:
+        name: Zabbix Agent 2
+        state: restarted
