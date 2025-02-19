@@ -1,23 +1,36 @@
 ---
-- name: Check if Zabbix Agent is installed on Windows hosts
+- name: Manage Zabbix Agent on Windows hosts
   hosts: all
   gather_facts: no
   tasks:
-    - name: Check if Zabbix Agent service exists
+    # Step 1: Stop the Zabbix Agent service if it is running
+    - name: Stop Zabbix Agent service
       win_service:
         name: 'Zabbix Agent'
-      register: zabbix_service
+        state: stopped
+      ignore_errors: yes  # Continue even if the service does not exist
 
-    - name: Debug the result of the Zabbix service check
-      debug:
-        var: zabbix_service
+    # Step 2: Remove the existing Zabbix Agent package
+    - name: Remove existing Zabbix Agent
+      ansible.windows.win_package:
+        path: 'X:\Path\To\Zabbix\Uninstaller.msi'  # Replace with the actual path to the uninstaller
+        state: absent
 
-    - name: Fail if Zabbix Agent is not installed
-      fail:
-        msg: "Zabbix Agent is not installed."
-      when: not zabbix_service.exists
+    # Step 3: Install the new Zabbix Agent package
+    - name: Install Zabbix Agent
+      ansible.windows.win_package:
+        path: 'X:\Path\To\Zabbix\Installer.msi'  # Replace with the actual path to the installer
+        arguments: '/q /norestart SERVER=x.x.x.x'  # Replace x.x.x.x with your Zabbix server IP
+        state: present
 
-    - name: Print a message if Zabbix Agent is installed
-      debug:
-        msg: "Zabbix Agent is installed and its state is {{ zabbix_service.state }}."
-      when: zabbix_service.exists
+    # Step 4: Copy the Zabbix Agent configuration template
+    - name: Copy Zabbix Agent configuration
+      ansible.windows.win_template:
+        src: zabbix_agent-windows.j2  # Replace with the path to your Jinja2 template
+        dest: 'C:\Program Files\Zabbix Agent\zabbix_agentd.conf'  # Replace with the actual destination path
+
+    # Step 5: Restart the Zabbix Agent service
+    - name: Restart Zabbix Agent service
+      win_service:
+        name: 'Zabbix Agent'
+        state: restarted
