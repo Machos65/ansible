@@ -1,6 +1,0 @@
----
-# requirements.yml
-- src: geerlingguy.windows
-  version: 1.0.0
-- src: geerlingguy.chocolatey
-  version: 1.0.0
