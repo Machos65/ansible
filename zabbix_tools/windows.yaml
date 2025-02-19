@@ -1,6 +1,6 @@
 ---
 - name: Install Zabbix Agent on Windows using Chocolatey
-  hosts: windows
+  hosts: all
   gather_facts: no
   tasks:
     # Step 1: Ensure Chocolatey is installed
