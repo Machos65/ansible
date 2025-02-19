@@ -1,3 +1,7 @@
-- name: Example task for Windows
-  win_ping:
-  # Do not use become for Windows tasks
+---
+- name: Example playbook for Windows
+  hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Ping the Windows host
+      win_ping:
