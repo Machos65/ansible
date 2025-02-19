@@ -1,7 +1,3 @@
 ---
-- name: Test Windows Connection
-  hosts: all
-  gather_facts: no
-  tasks:
-    - name: Ping the Windows host
-      win_ping:
+- name: Ping the Windows host
+  win_ping:
