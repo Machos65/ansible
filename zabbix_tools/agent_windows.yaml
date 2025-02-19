@@ -3,6 +3,6 @@
   hosts: all
   tasks:
     - name: Install Notepad++
-      chocolatey.chocolatey.chocolatey:
+      chocolatey.chocolatey.win_chocolatey:
         name: notepadplusplus
         state: present
