@@ -5,8 +5,7 @@
   become_method: runas
   vars:
     zabbix_agent2_hostname: "{{ ansible_hostname }}"
-    zabbix_server: "your_zabbix_server_ip"
-    zabbix_server_active: "your_zabbix_server_active_ip"
+
 
   tasks:
     - name: Ensure Chocolatey is installed
