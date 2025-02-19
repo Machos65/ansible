@@ -1,33 +1,27 @@
 ---
-- name: Manage Zabbix Agent on Windows hosts
-  hosts: all
+- name: Install Zabbix Agent on Windows using Chocolatey
+  hosts: windows
   gather_facts: no
   tasks:
-    # Step 1: Stop the Zabbix Agent service if it is running
+    # Step 1: Ensure Chocolatey is installed
+    - name: Install Chocolatey
+      win_chocolatey:
+        name: chocolatey
+        state: present
+
+    # Step 2: Stop the Zabbix Agent service if it is running
     - name: Stop Zabbix Agent service
       win_service:
         name: 'Zabbix Agent'
         state: stopped
       ignore_errors: yes  # Continue even if the service does not exist
 
-    # Step 2: Remove the existing Zabbix Agent package
-    - name: Remove existing Zabbix Agent
-      ansible.windows.win_package:
-        path: 'X:\Path\To\Zabbix\Uninstaller.msi'  # Replace with the actual path to the uninstaller
-        state: absent
-
-    # Step 3: Install the new Zabbix Agent package
+    # Step 3: Install Zabbix Agent using Chocolatey
     - name: Install Zabbix Agent
-      ansible.windows.win_package:
-        path: 'X:\Path\To\Zabbix\Installer.msi'  # Replace with the actual path to the installer
-        arguments: '/q /norestart SERVER=x.x.x.x'  # Replace x.x.x.x with your Zabbix server IP
+      win_chocolatey:
+        name: zabbix-agent
         state: present
-
-    # Step 4: Copy the Zabbix Agent configuration template
-    - name: Copy Zabbix Agent configuration
-      ansible.windows.win_template:
-        src: zabbix_agent-windows.j2  # Replace with the path to your Jinja2 template
-        dest: 'C:\Program Files\Zabbix Agent\zabbix_agentd.conf'  # Replace with the actual destination path
+        install_args: 'SERVER=x.x.x.x'  # Replace x.x.x.x with your Zabbix server IP
 
     # Step 5: Restart the Zabbix Agent service
     - name: Restart Zabbix Agent service
