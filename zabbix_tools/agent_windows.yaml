@@ -2,6 +2,10 @@
 - name: Install Notepad++ using Chocolatey
   hosts: all
   tasks:
+    - name: Install roles from requirements.yml
+      ansible.builtin.command: ansible-galaxy install -r requirements.yml
+      when: requirements.yml is defined
+
     - name: Install Notepad++
       win_chocolatey:
         name: notepadplusplus
