@@ -1,8 +1,26 @@
 ---
-- name: Install Notepad++ using Chocolatey
+- name: Install Zabbix Agent 2 on Windows
   hosts: all
   tasks:
-    - name: Install Notepad++
-      community.windows.win_chocolatey:
-        name: notepadplusplus
+    - name: Ensure Chocolatey is installed
+      chocolatey.chocolatey:
+        name: chocolatey
         state: present
+
+    - name: Install Zabbix Agent 2
+      chocolatey.chocolatey:
+        name: zabbix-agent2
+        state: present
+
+    - name: Configure Zabbix Agent 2
+      win_ini:
+        path: C:\ProgramData\zabbix\zabbix_agentd.conf
+        section: "Zabbix"
+        option: "Server"
+        value: "your_zabbix_server_ip"
+
+    - name: Start Zabbix Agent 2 service
+      win_service:
+        name: Zabbix Agent 2
+        start_mode: auto
+        state: started
