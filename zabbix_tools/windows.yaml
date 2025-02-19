@@ -17,7 +17,7 @@
         path: C:\ProgramData\zabbix\zabbix_agentd.conf
         section: "Zabbix"
         option: "Server"
-        value: "your_zabbix_server_ip"
+        value: "{{ zabbix_server }}"
 
     - name: Start Zabbix Agent 2 service
       win_service:
