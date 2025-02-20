@@ -1,6 +1,6 @@
 ---
 - name: Install Firefox on Windows Hosts
-  hosts: windows
+  hosts: all
   gather_facts: no  # Skip gathering facts for Windows to speed up; use win_facts if needed
   become: yes        # Use become if required for admin privileges
 
