@@ -5,7 +5,7 @@
 
   tasks:
     - name: Ensure Chocolatey is installed
-      ansible.windows.win_chocolatey:
+      win_chocolatey:
         name: chocolatey
         state: present
       register: choco_install
@@ -15,7 +15,7 @@
       ignore_errors: yes
 
     - name: Install Firefox using Chocolatey
-      ansible.windows.win_chocolatey:
+      win_chocolatey:
         name: firefox
         state: present
       register: firefox_install
@@ -25,7 +25,7 @@
       ignore_errors: yes
 
     - name: Verify Firefox installation
-      ansible.windows.win_stat:
+      win_stat:
         path: "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
       register: firefox_path
       failed_when: not firefox_path.stat.exists
