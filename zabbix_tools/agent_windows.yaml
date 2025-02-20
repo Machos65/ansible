@@ -1,51 +1,37 @@
 ---
 - name: Install Zabbix Agent 2 on Windows
-  hosts: all  # Target your Windows hosts (defined in your AWX inventory)
-  gather_facts: no  # Skip gathering facts if not needed for simplicity
-
-  vars:
-    msi_path: "C:\\temp\\zabbix_agent-2.7.2.2-windows-amd64-openssl.msi"  # Local path on the Windows host or remote path
-    zabbix_server: "172.16.42.143"  # Replace with your Zabbix server hostname/IP
-    zabbix_hostname: "{{ inventory_hostname }}"  # Use the host's inventory name as Zabbix hostname
-
+  hosts: all
+  gather_facts: no
   tasks:
-    - name: Ensure installation directory exists
-      ansible.windows.win_file:
-        path: "C:\\temp"
+    - name: Create a temporary directory to store the installer
+      win_tempfile:
         state: directory
-      register: dir_result
+      register: temp_dir
 
-    - name: Copy Zabbix Agent MSI from repository to Windows host
-      ansible.windows.win_copy:
-        src: "zabbix_tools/zabbix_agent-2.7.2.2-windows-amd64-openssl.msi"  # Path in your GitHub repo
-        dest: "{{ msi_path }}"
-      register: copy_result
+    - name: Download Zabbix Agent 2 installer
+      win_get_url:
+        url: https://cdn.zabbix.com/zabbix/binaries/stable/7.2/7.2.3/zabbix_agent2-7.2.3-windows-amd64-openssl.msi
+        dest: "{{ temp_dir.path }}\\zabbix_agent2.msi"
+      when: zabbix_agent2_version is not defined
 
-    - name: Install Zabbix Agent 2 using MSI package
-      ansible.windows.win_package:
-        path: "{{ msi_path }}"
-        state: present
-        arguments: >
-          /quiet
-          ZABBIX_SERVER={{ zabbix_server }}
-          ZABBIX_HOSTNAME={{ zabbix_hostname }}
+    - name: Install Zabbix Agent 2
+      win_package:
+        path: "{{ temp_dir.path }}\\zabbix_agent2.msi"
+        product_id: "{Zabbix Agent 2}"
+        arguments: /quiet /norestart SERVER=172.16.42.143 LISTENPORT=10050 HOSTNAME={{ ansible_hostname }}
       register: install_result
 
-    - name: Ensure Zabbix Agent service is running
-      ansible.windows.win_service:
-        name: "Zabbix Agent 2"
+    - name: Ensure Zabbix Agent 2 service is running
+      win_service:
+        name: Zabbix Agent 2
         state: started
         start_mode: auto
-      register: service_result
 
-    - name: Clean up MSI file after installation
-      ansible.windows.win_file:
-        path: "{{ msi_path }}"
+    - name: Clean up temporary directory
+      win_file:
+        path: "{{ temp_dir.path }}"
         state: absent
-      when: install_result.changed
 
-  handlers:
-    - name: Restart Zabbix Agent 2
-      ansible.windows.win_service:
-        name: "Zabbix Agent 2"
-        state: restarted
+    - name: Debug install result
+      debug:
+        var: install_result
