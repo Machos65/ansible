@@ -1,39 +1,98 @@
 ---
-- name: Install and Configure Zabbix Agent 2 on Windows Hosts
+- name: Install and Configure Zabbix Agent on Windows Hosts
   hosts: all
   gather_facts: no
   vars:
     zabbix_server_ip: "172.16.42.143"  # Replace with your Zabbix server IP
-    zabbix_agent_port: "10050"
-    zabbix_agent_version: "7.2.2"      # Specify desired version
+    zabbix_installer_path: "C:\\Temp\\zabbix_agent-7.2.2-windows-amd64.msi"  # Path to MSI installer
+    zabbix_config_dir: "C:\\Program Files\\Zabbix Agent"  # Zabbix config directory
+    zabbix_backup_dir: "C:\\Temp\\zabbix_backup.zip"  # Backup location
 
   tasks:
-    - name: Ensure Chocolatey is installed
-      win_chocolatey:
-        name: chocolatey
-        state: present
-      register: choco_install
-      retries: 3
-      delay: 5
-      until: choco_install is success
+    - name: Check if Zabbix Agent service exists
+      ansible.windows.win_service:
+        name: "Zabbix Agent"
+      register: zabbix_service
       ignore_errors: yes
 
-    - name: Install Zabbix Agent 2 using Chocolatey
-      win_chocolatey:
-        name: zabbix-agent
-        version: "{{ zabbix_agent_version }}"
+    - name: Get Zabbix Agent version if installed
+      ansible.windows.win_powershell:
+        script: |
+          try {
+              $zabbix_path = "C:\\Program Files\\Zabbix Agent\\zabbix_agentd.exe"
+              if (Test-Path $zabbix_path) {
+                  $version_output = & $zabbix_path -V | Select-String -Pattern 'Zabbix' | Select-Object -First 1
+                  $version = ($version_output -split ' ')[5]
+                  Write-Output $version
+              } else {
+                  Write-Output "Not Installed"
+              }
+          } catch {
+              Write-Output "Error checking version"
+          }
+      register: zabbix_version
+      ignore_errors: yes
+
+    - name: Debug Zabbix Agent status and version
+      ansible.builtin.debug:
+        msg: "Zabbix Agent is {{ 'installed' if zabbix_service.exists else 'not installed' }}, Version: {{ zabbix_version.stdout | default('Unknown') }}"
+
+    - name: Backup existing Zabbix configuration if installed
+      ansible.windows.win_zip:
+        src: "{{ zabbix_config_dir }}"
+        dest: "{{ zabbix_backup_dir }}"
+      when: zabbix_service.exists
+      ignore_errors: yes
+
+    - name: Stop Zabbix Agent service if running
+      ansible.windows.win_service:
+        name: "Zabbix Agent"
+        state: stopped
+      when: zabbix_service.exists
+      ignore_errors: yes
+
+    - name: Uninstall existing Zabbix Agent if installed
+      ansible.windows.win_package:
+        path: "{{ zabbix_installer_path }}"
+        state: absent
+      when: zabbix_service.exists
+      ignore_errors: yes
+
+    - name: Install Zabbix Agent MSI package
+      ansible.windows.win_package:
+        path: "{{ zabbix_installer_path }}"
+        arguments: "/q /norestart SERVER={{ zabbix_server_ip }}"
         state: present
-        package_params: "/SERVER={{ zabbix_server_ip }} /PORT={{ zabbix_agent_port }}"
       register: zabbix_install
       retries: 3
       delay: 5
       until: zabbix_install is success
       ignore_errors: yes
 
-    - name: Ensure Zabbix Agent 2 service is running
-      win_service:
-        name: "Zabbix Agent 2"
-        state: started
+    - name: Create basic Zabbix Agent configuration file
+      ansible.windows.win_file:
+        path: "{{ zabbix_config_dir }}\\zabbix_agentd.conf"
+        state: touch
+      ignore_errors: yes
+
+    - name: Set Zabbix Agent configuration
+      ansible.windows.win_lineinfile:
+        path: "{{ zabbix_config_dir }}\\zabbix_agentd.conf"
+        line: "{{ item }}"
+        state: present
+      loop:
+        - "Server={{ zabbix_server_ip }}"
+        - "ServerActive={{ zabbix_server_ip }}"
+        - "Hostname={{ inventory_hostname }}"
+        - "LogFile=c:\\zabbix_agentd.log"
+        - "EnableRemoteCommands=1"
+        - "UnsafeUserParameters=1"
+      ignore_errors: yes
+
+    - name: Ensure Zabbix Agent service is running
+      ansible.windows.win_service:
+        name: "Zabbix Agent"
+        state: restarted
         start_mode: auto
       register: service_status
       retries: 3
@@ -41,13 +100,24 @@
       until: service_status is success
       ignore_errors: yes
 
-    - name: Verify Zabbix Agent 2 installation
-      win_stat:
-        path: "C:\\Program Files\\Zabbix Agent 2\\zabbix_agent2.exe"
+    - name: Firewall rule to allow Zabbix Agent traffic
+      community.windows.win_firewall_rule:
+        name: "Zabbix Agent"
+        localport: 10050
+        action: allow
+        direction: in
+        protocol: tcp
+        state: present
+        enabled: true
+      ignore_errors: yes
+
+    - name: Verify Zabbix Agent installation
+      ansible.windows.win_stat:
+        path: "C:\\Program Files\\Zabbix Agent\\zabbix_agentd.exe"
       register: zabbix_path
       failed_when: not zabbix_path.stat.exists
       ignore_errors: yes
 
-    - name: Debug installation status
+    - name: Debug final installation status
       ansible.builtin.debug:
-        msg: "Zabbix Agent 2 installation {{ 'succeeded' if zabbix_path.stat.exists else 'failed' }}"
+        msg: "Zabbix Agent installation {{ 'succeeded' if zabbix_path.stat.exists else 'failed' }}"
