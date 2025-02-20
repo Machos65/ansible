@@ -5,7 +5,7 @@
 
   vars:
     msi_path: "C:\\temp\\zabbix_agent-2.7.2.2-windows-amd64-openssl.msi"  # Local path on the Windows host or remote path
-    zabbix_server: "zabbix.example.com"  # Replace with your Zabbix server hostname/IP
+    zabbix_server: "172.16.42.143"  # Replace with your Zabbix server hostname/IP
     zabbix_hostname: "{{ inventory_hostname }}"  # Use the host's inventory name as Zabbix hostname
 
   tasks:
