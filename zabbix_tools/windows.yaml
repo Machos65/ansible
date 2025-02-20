@@ -1,36 +1,59 @@
 ---
-- name: Install Google Chrome on Windows Hosts
-  hosts: all
-  gather_facts: no
+- name: Install and configure Zabbix Agent 2 via Chocolatey
+  hosts: windows
+  vars:
+    zabbix_server: "172.16.42.143"    # Your Zabbix server IP
+    zabbix_listenport: "10050"        # Agent listening port
+    zabbix_hostname: "{{ ansible_hostname }}"
+    zabbix_conf_path: "C:\Program Files\Zabbix Agent 2\zabbix_agent2.conf"
 
   tasks:
     - name: Ensure Chocolatey is installed
+      win_shell: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+      args:
+        executable: powershell
+      become: yes
+      become_method: runas
+      become_user: SYSTEM
+
+    - name: Install Zabbix Agent 2 using Chocolatey
       win_chocolatey:
-        name: chocolatey
+        name: zabbix-agent2
         state: present
-      register: choco_install
-      retries: 3
-      delay: 5
-      until: choco_install is success
-      ignore_errors: yes
+        version: 7.2.3
+        ignore_checksums: yes
+      become: yes
+      become_method: runas
+      become_user: SYSTEM
 
-    - name: Install Google Chrome using Chocolatey
-      win_chocolatey:
-        name: googlechrome
-        state: present
-      register: chrome_install
-      retries: 3
-      delay: 5
-      until: chrome_install is success
-      ignore_errors: yes
+    - name: Configure Zabbix Server address
+      win_lineinfile:
+        path: "{{ zabbix_conf_path }}"
+        regex: '^Server='
+        line: "Server={{ zabbix_server }}"
 
-    - name: Verify Chrome installation
-      win_stat:
-        path: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-      register: chrome_path
-      failed_when: not chrome_path.stat.exists
-      ignore_errors: yes
+    - name: Configure Zabbix Server active address
+      win_lineinfile:
+        path: "{{ zabbix_conf_path }}"
+        regex: '^ServerActive='
+        line: "ServerActive={{ zabbix_server }}"
 
-    - name: Debug installation status
-      ansible.builtin.debug:
-        msg: "Google Chrome installation {{ 'succeeded' if chrome_path.stat.exists else 'failed' }}"
+    - name: Configure Zabbix Hostname
+      win_lineinfile:
+        path: "{{ zabbix_conf_path }}"
+        regex: '^Hostname='
+        line: "Hostname={{ zabbix_hostname }}"
+
+    - name: Restart Zabbix Agent 2 service
+      win_service:
+        name: "Zabbix Agent 2"
+        state: restarted
+        start_mode: auto
+
+    - name: Ensure service is running
+      win_service:
+        name: "Zabbix Agent 2"
+        state: started
