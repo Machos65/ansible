@@ -1,37 +1,36 @@
 ---
 - name: Install Firefox on Windows Hosts
   hosts: all
-  gather_facts: no  # Skip gathering facts for Windows to speed up; use win_facts if needed
-  become: yes        # Use become if required for admin privileges
+  gather_facts: no
 
   tasks:
     - name: Ensure Chocolatey is installed
-      win_chocolatey:
+      ansible.windows.win_chocolatey:
         name: chocolatey
         state: present
       register: choco_install
       retries: 3
       delay: 5
       until: choco_install is success
-      ignore_errors: yes  # Continue if Chocolatey is already installed
+      ignore_errors: yes
 
     - name: Install Firefox using Chocolatey
-      win_chocolatey:
+      ansible.windows.win_chocolatey:
         name: firefox
         state: present
       register: firefox_install
       retries: 3
       delay: 5
       until: firefox_install is success
-      ignore_errors: yes  # Handle potential transient errors
+      ignore_errors: yes
 
     - name: Verify Firefox installation
-      win_stat:
+      ansible.windows.win_stat:
         path: "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
       register: firefox_path
       failed_when: not firefox_path.stat.exists
-      ignore_errors: yes  # Continue even if verification fails
+      ignore_errors: yes
 
     - name: Debug installation status
-      debug:
+      ansible.builtin.debug:
         msg: "Firefox installation {{ 'succeeded' if firefox_path.stat.exists else 'failed' }}"
