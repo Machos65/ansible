@@ -1,6 +1,6 @@
 ---
 - name: Install and configure Zabbix Agent 2 via Chocolatey
-  hosts: windows
+  hosts: all
   vars:
     zabbix_server: "172.16.42.143"    # Your Zabbix server IP
     zabbix_listenport: "10050"        # Agent listening port
