@@ -1,7 +1,7 @@
 ---
 - name: Install Zabbix Agent 2 on Windows
   hosts: all
-  gather_facts: no
+  gather_facts: yes
   tasks:
     - name: Create a temporary directory to store the installer
       win_tempfile:
