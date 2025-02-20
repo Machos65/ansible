@@ -1,6 +1,6 @@
 ---
 - name: Install Zabbix Agent 2 on Windows
-  hosts: windows  # Target your Windows hosts (defined in your AWX inventory)
+  hosts: all  # Target your Windows hosts (defined in your AWX inventory)
   gather_facts: no  # Skip gathering facts if not needed for simplicity
 
   vars:
