@@ -1,26 +1,36 @@
 ---
-- name: Install Zabbix Agent 2 on Windows
+- name: Install Google Chrome on Windows Hosts
   hosts: all
+  gather_facts: no
+
   tasks:
     - name: Ensure Chocolatey is installed
-      chocolatey.chocolatey:
+      win_chocolatey:
         name: chocolatey
         state: present
+      register: choco_install
+      retries: 3
+      delay: 5
+      until: choco_install is success
+      ignore_errors: yes
 
-    - name: Install Zabbix Agent 2
-      chocolatey.chocolatey:
-        name: zabbix-agent2
+    - name: Install Google Chrome using Chocolatey
+      win_chocolatey:
+        name: googlechrome
         state: present
+      register: chrome_install
+      retries: 3
+      delay: 5
+      until: chrome_install is success
+      ignore_errors: yes
 
-    - name: Configure Zabbix Agent 2
-      win_ini:
-        path: C:\ProgramData\zabbix\zabbix_agentd.conf
-        section: "Zabbix"
-        option: "Server"
-        value: "{{ zabbix_server }}"
+    - name: Verify Chrome installation
+      win_stat:
+        path: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+      register: chrome_path
+      failed_when: not chrome_path.stat.exists
+      ignore_errors: yes
 
-    - name: Start Zabbix Agent 2 service
-      win_service:
-        name: Zabbix Agent 2
-        start_mode: auto
-        state: started
+    - name: Debug installation status
+      ansible.builtin.debug:
+        msg: "Google Chrome installation {{ 'succeeded' if chrome_path.stat.exists else 'failed' }}"
