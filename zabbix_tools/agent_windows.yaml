@@ -1,6 +1,6 @@
 ---
 - name: Install Zabbix Agent 2 on Windows
-  hosts: {{ windows_host }}
+  hosts: all
   gather_facts: yes
   tasks:
     - name: Create a temporary directory to store the installer
