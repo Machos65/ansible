@@ -1,59 +1,34 @@
 ---
-- name: Install and configure Zabbix Agent 2 via Chocolatey
-  hosts: all
+- name: Add host to Zabbix
+  hosts: localhost
+  connection: local
   vars:
-    zabbix_server: "172.16.42.143"    # Your Zabbix server IP
-    zabbix_listenport: "10050"        # Agent listening port
-    zabbix_hostname: "{{ ansible_hostname }}"
-    zabbix_conf_path: "C:\Program Files\Zabbix Agent 2\zabbix_agent2.conf"
-
+    zabbix_server_url: "{{ zabbix_server_url }}"
+    zabbix_login_user: "{{ zabbix_login_user }}"
+    zabbix_login_password: "{{ zabbix_login_password }}"
+    host_name: "{{ host_name }}"
+    host_visible_name: "{{ host_visible_name }}"
+    host_description: "{{ host_description }}"
+    host_groups: "{{ host_groups }}"
+    host_templates: "{{ host_templates }}"
+    host_ip: "{{ host_ip }}"
   tasks:
-    - name: Ensure Chocolatey is installed
-      win_shell: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-      args:
-        executable: powershell
-      become: yes
-      become_method: runas
-      become_user: SYSTEM
-
-    - name: Install Zabbix Agent 2 using Chocolatey
-      win_chocolatey:
-        name: zabbix-agent2
+    - name: Add new host to Zabbix
+      community.zabbix.zabbix_host:
+        server_url: "{{ zabbix_server_url }}"
+        login_user: "{{ zabbix_login_user }}"
+        login_password: "{{ zabbix_login_password }}"
+        host_name: "{{ host_name }}"
+        visible_name: "{{ host_visible_name }}"
+        description: "{{ host_description }}"
+        host_groups: "{{ host_groups }}"
+        link_templates: "{{ host_templates }}"
+        status: enabled
         state: present
-        version: 7.2.3
-        ignore_checksums: yes
-      become: yes
-      become_method: runas
-      become_user: SYSTEM
-
-    - name: Configure Zabbix Server address
-      win_lineinfile:
-        path: "{{ zabbix_conf_path }}"
-        regex: '^Server='
-        line: "Server={{ zabbix_server }}"
-
-    - name: Configure Zabbix Server active address
-      win_lineinfile:
-        path: "{{ zabbix_conf_path }}"
-        regex: '^ServerActive='
-        line: "ServerActive={{ zabbix_server }}"
-
-    - name: Configure Zabbix Hostname
-      win_lineinfile:
-        path: "{{ zabbix_conf_path }}"
-        regex: '^Hostname='
-        line: "Hostname={{ zabbix_hostname }}"
-
-    - name: Restart Zabbix Agent 2 service
-      win_service:
-        name: "Zabbix Agent 2"
-        state: restarted
-        start_mode: auto
-
-    - name: Ensure service is running
-      win_service:
-        name: "Zabbix Agent 2"
-        state: started
+        interfaces:
+          - type: 1
+            main: 1
+            useip: 1
+            ip: "{{ host_ip }}"
+            dns: ""
+            port: 10050
