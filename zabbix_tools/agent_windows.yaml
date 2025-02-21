@@ -18,7 +18,7 @@
       win_package:
         path: "{{ temp_dir.path }}\\zabbix_agent2.msi"
         product_id: "{Zabbix Agent 2}"
-        arguments: /quiet /norestart SERVER={{ zabbix_server }} LISTENPORT=10050 HOSTNAME={{ ansible_hostname }}
+        arguments: /quiet /norestart SERVER={{ zabbix_server }} LISTENPORT=10050 HOSTNAME={{ ansible_hostname }}  HOSTMETADATA="Windows"
       register: install_result
 
     - name: Ensure Zabbix Agent 2 service is running
