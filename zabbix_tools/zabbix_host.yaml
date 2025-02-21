@@ -1,6 +1,6 @@
 ---
 - name: Add host to Zabbix
-  hosts: localhost
+  hosts:  "{{ target_host | default('all') }}"
   connection: local
   vars:
     zabbix_server_url: "{{ zabbix_server_url }}"
