@@ -1,4 +1,3 @@
-
 ---
 - name: Update NGINX SSL Certificates
   hosts: web-servers
