@@ -22,14 +22,14 @@
     
     - name: Update NGINX config with new SSL paths
       lineinfile:
-        path: /etc/nginx/sites-available/yourdomain.com
+        path: /etc/nginx/conf.d/minios.conf
         regexp: '^(\s*ssl_certificate\s+).*$'
         line: '\1/etc/ssl/fumbaports.crt;'
         backrefs: yes
     
     - name: Update NGINX key path
       lineinfile:
-        path: /etc/nginx/sites-available/yourdomain.com
+        path: /etc/nginx/conf.d/minios.conf
         regexp: '^(\s*ssl_certificate_key\s+).*$'
         line: '\1/etc/ssl/fumbaports.key;'
         backrefs: yes
