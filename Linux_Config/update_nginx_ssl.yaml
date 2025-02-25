@@ -1,6 +1,6 @@
 ---
 - name: Update NGINX SSL Certificates
-  hosts: web-servers
+  hosts: all
   become: yes
   tasks:
     - name: Copy new SSL certificate
