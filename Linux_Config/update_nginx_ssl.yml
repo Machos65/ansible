@@ -1,1 +1,45 @@
 
+---
+- name: Update NGINX SSL Certificates
+  hosts: web-servers
+  become: yes
+  tasks:
+    - name: Copy new SSL certificate
+      copy:
+        src: "{{ playbook_dir }}/Certs/fumbaports.crt"
+        dest: /etc/ssl/fumbaports.crt
+        owner: root
+        group: root
+        mode: '0644'
+    
+    - name: Copy new SSL key
+      copy:
+        src: "{{ playbook_dir }}/Certs/fumbaports.key"
+        dest: /etc/ssl/fumbaports.key
+        owner: root
+        group: root
+        mode: '0600'
+    
+    - name: Update NGINX config with new SSL paths
+      lineinfile:
+        path: /etc/nginx/sites-available/yourdomain.com
+        regexp: '^(\s*ssl_certificate\s+).*$'
+        line: '\1/etc/ssl/fumbaports.crt;'
+        backrefs: yes
+    
+    - name: Update NGINX key path
+      lineinfile:
+        path: /etc/nginx/sites-available/yourdomain.com
+        regexp: '^(\s*ssl_certificate_key\s+).*$'
+        line: '\1/etc/ssl/fumbaports.key;'
+        backrefs: yes
+    
+    - name: Test NGINX configuration
+      command: nginx -t
+      register: nginx_test
+    
+    - name: Reload NGINX if config is valid
+      service:
+        name: nginx
+        state: reloaded
+      when: nginx_test.rc == 0
